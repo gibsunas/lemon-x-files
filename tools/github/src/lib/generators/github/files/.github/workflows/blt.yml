@@ -1,0 +1,14 @@
+name: Build, Lint, Test
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+jobs:
+  type:
+    name: Typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
