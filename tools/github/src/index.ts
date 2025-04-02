@@ -1,1 +1,1 @@
-export * from './lib/generators/github';
+export * from './lib/github.module';

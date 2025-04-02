@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "editor": {
+      "factory": "./dist/src/lib/editor",
+      "schema": "./dist/src/lib/schema.json",
+      "description": "editor config generator"
+    }
+  }
+}

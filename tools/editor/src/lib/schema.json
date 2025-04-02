@@ -1,8 +1,10 @@
 {
   "$schema": "https://json-schema.org/schema",
-  "$id": "Github",
+  "$id": "Editor",
   "title": "",
   "type": "object",
-  "properties": {},
+  "properties": {
+
+  },
   "required": []
 }

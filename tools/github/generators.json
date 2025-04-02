@@ -1,7 +1,7 @@
 {
   "generators": {
     "github": {
-      "factory": "./dist/src/lib/generators",
+      "factory": "./dist/src/lib/github",
       "schema": "./dist/src/lib/schema.json",
       "description": "github generator"
     }
