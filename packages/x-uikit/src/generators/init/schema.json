@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "Init",
+  "title": "",
+  "type": "object",
+  "properties": {
+    "directory": {
+      "type": "string",
+      "description": "",
+      "x-prompt": "What directory should be updated?"
+    }
+  },
+  "required": []
+}

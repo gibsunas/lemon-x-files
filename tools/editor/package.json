@@ -1,5 +1,5 @@
 {
-  "name": "@lemon/editor",
+  "name": "@lemon/x-editor",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
     }
   },
   "nx": {
-    "name": "editor",
+    "name": "x-editor",
     "targets": {
       "build": {
         "executor": "@nx/js:tsc",

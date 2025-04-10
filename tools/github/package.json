@@ -1,5 +1,5 @@
 {
-  "name": "@lemon/github",
+  "name": "@lemon/x-github",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
     }
   },
   "nx": {
-    "name": "github",
+    "name": "x-github",
     "targets": {
       "build": {
         "executor": "@nx/js:tsc",
