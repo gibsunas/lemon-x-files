@@ -18,6 +18,11 @@ export interface PrismaPluginOptions extends PluginOptions{
   outputPath?: string;
   // Add other options as needed
 }
+
+
+export interface UtilsPluginOptions extends PluginOptions{
+
+}
 /**
  * Usage example:
  * Define your options
@@ -56,9 +61,9 @@ export class NxPluginBuilder<T extends PluginOptions> {
    */
   hasPlugin(): boolean {
     return this.nxJson.plugins?.some((p: any) =>
-      typeof p === 'string'
-        ? p === this.pluginName
-        : p.plugin === this.pluginName
+        typeof p === 'string'
+            ? p === this.pluginName
+            : p.plugin === this.pluginName
     ) || false;
   }
 
@@ -71,7 +76,7 @@ export class NxPluginBuilder<T extends PluginOptions> {
   }
 
   /**
-   * Sets multiple options at once
+   * Sets multiple options at once with type safety
    */
   withOptions(options: Partial<T>): NxPluginBuilder<T> {
     this.options = { ...this.options, ...options };
@@ -96,6 +101,7 @@ export class NxPluginBuilder<T extends PluginOptions> {
       ];
 
       updateNxJson(this.tree, this.nxJson);
+      // TODO: this probably should update a package json
     }
   }
 }
@@ -118,7 +124,7 @@ export class NxPluginBuilder<T extends PluginOptions> {
  */
 export class PackageDependencyManager {
   /**
-   * File tree structure used for package operations
+   * File tree structure used internally for package operations
    * @private
    */
   private tree: any;
@@ -207,10 +213,10 @@ export class PackageDependencyManager {
    */
   async updatePackageJson(): Promise<void> {
     await addDependenciesToPackageJson(
-      this.tree,
-      this.dependencies,
-      this.devDependencies,
-      this.packageJsonPath
+        this.tree,
+        this.dependencies,
+        this.devDependencies,
+        this.packageJsonPath
     );
   }
 
