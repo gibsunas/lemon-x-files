@@ -100,6 +100,29 @@ import {
 } from 'gherkin-ast';
 import { writeFeature } from 'gherkin-io';
 
+/**
+ * Interface for defining steps in Gherkin scenarios.
+ * 
+ * @interface StepDefinition
+ * @property {string} keyword - The step keyword ('Given', 'When', 'Then', 'And', 'But')
+ * @property {string} text - The step text
+ * @property {string[][]} [dataTable] - Optional data table for the step
+ * @property {string} [docString] - Optional doc string for the step
+ * 
+ * @example
+ * ```typescript
+
+* const step: StepDefinition = {
+*   keyword: &#x27;Given&#x27;,
+*   text: &#x27;the following users exist&#x27;,
+*   dataTable: [
+*     [&#x27;username&#x27;, &#x27;email&#x27;],
+*     [&#x27;john&#x27;, &#x27;john@example.com&#x27;],
+*     [&#x27;jane&#x27;, &#x27;jane@example.com&#x27;]
+*   ]
+* };
+* ```
+ */
 export interface StepDefinition {
   keyword: string;
   text: string;
@@ -107,132 +130,21 @@ export interface StepDefinition {
   docString?: string;
 }
 
-export class GherkinFeatureBuilder {
-  private feature: Feature;
-  private document: Document;
-
-  constructor(name: string, description?: string) {
-    this.feature = new Feature(name);
-    if (description) {
-      this.feature.withDescription(description);
-    }
-    this.document = new Document();
-    this.document.addFeature(this.feature);
-  }
-
-  // Feature methods
-  withDescription(description: string): GherkinFeatureBuilder {
-    this.feature.withDescription(description);
-    return this;
-  }
-
-  addTags(tags: string[]): GherkinFeatureBuilder {
-    tags.forEach(tag => {
-      this.feature.addTag(new Tag(tag));
-    });
-    return this;
-  }
-
-  // Background methods
-  addBackground(steps: StepDefinition[]): GherkinFeatureBuilder {
-    const background = new Background();
-
-    steps.forEach(step => {
-      const newStep = new Step(step.keyword, step.text);
-      this.addStepData(newStep, step);
-      background.addStep(newStep);
-    });
-
-    this.feature.addBackground(background);
-    return this;
-  }
-
-  // Scenario methods
-  addScenario(name: string, steps: StepDefinition[], tags?: string[]): GherkinFeatureBuilder {
-    const scenario = new Scenario(name);
-
-    if (tags) {
-      tags.forEach(tag => {
-        scenario.addTag(new Tag(tag));
-      });
-    }
-
-    steps.forEach(step => {
-      const newStep = new Step(step.keyword, step.text);
-      this.addStepData(newStep, step);
-      scenario.addStep(newStep);
-    });
-
-    this.feature.addScenario(scenario);
-    return this;
-  }
-
-  // ScenarioOutline methods (renamed from ScenarioTemplate for standard Gherkin terminology)
-  addScenarioOutline(name: string, steps: StepDefinition[], examples: string[][], tags?: string[]): GherkinFeatureBuilder {
-    const scenarioOutline = new ScenarioTemplate(name);
-
-    if (tags) {
-      tags.forEach(tag => {
-        scenarioOutline.addTag(new Tag(tag));
-      });
-    }
-
-    steps.forEach(step => {
-      const newStep = new Step(step.keyword, step.text);
-      this.addStepData(newStep, step);
-      scenarioOutline.addStep(newStep);
-    });
-
-    if (examples && examples.length > 0) {
-      const examplesObj = new Examples().withDataTable(new DataTable(examples));
-      scenarioOutline.addExamples(examplesObj);
-    }
-
-    this.feature.addScenarioTemplate(scenarioOutline);
-    return this;
-  }
-
-  // Rule methods
-  addRule(name: string, description?: string): RuleBuilder {
-    return new RuleBuilder(this, name, description);
-  }
-
-  // Comment methods
-  addComment(text: string): GherkinFeatureBuilder {
-    this.feature.addComment(new Comment(text));
-    return this;
-  }
-
-  // Helper method for adding data to steps
-  private addStepData(step: Step, definition: StepDefinition): void {
-    if (definition.dataTable) {
-      step.withDataTable(new DataTable(definition.dataTable));
-    }
-
-    if (definition.docString) {
-      step.withDocString(new DocString(definition.docString));
-    }
-  }
-
-  // Build methods
-  build(): Feature {
-    return this.feature;
-  }
-
-  buildDocument(): Document {
-    return this.document;
-  }
-
-  writeToFile(filePath: string): void {
-    writeFeature(this.feature, filePath);
-  }
-}
-
-// Helper class for building Rules
+/**
+ * RuleBuilder - A helper class for building Rule objects within a feature.
+ * Rules help organize scenarios into logical groups.
+ */
 export class RuleBuilder {
   private rule: Rule;
   private parent: GherkinFeatureBuilder;
 
+  /**
+   * Creates a new rule builder.
+   * 
+   * @param {GherkinFeatureBuilder} parent - The parent feature builder
+   * @param {string} name - The name of the rule
+   * @param {string} [description] - Optional description of the rule
+   */
   constructor(parent: GherkinFeatureBuilder, name: string, description?: string) {
     this.parent = parent;
     this.rule = new Rule(name);
@@ -241,11 +153,23 @@ export class RuleBuilder {
     }
   }
 
+  /**
+   * Adds or updates the rule description.
+   * 
+   * @param {string} description - The rule description
+   * @returns {RuleBuilder} The builder instance for method chaining
+   */
   withDescription(description: string): RuleBuilder {
     this.rule.withDescription(description);
     return this;
   }
 
+  /**
+   * Adds tags to the rule.
+   * 
+   * @param {string[]} tags - Array of tags
+   * @returns {RuleBuilder} The builder instance for method chaining
+   */
   addTags(tags: string[]): RuleBuilder {
     tags.forEach(tag => {
       this.rule.addTag(new Tag(tag));
@@ -253,6 +177,12 @@ export class RuleBuilder {
     return this;
   }
 
+  /**
+   * Adds a background section to the rule.
+   * 
+   * @param {StepDefinition[]} steps - Array of step definitions for the background
+   * @returns {RuleBuilder} The builder instance for method chaining
+   */
   addBackground(steps: StepDefinition[]): RuleBuilder {
     const background = new Background();
 
@@ -271,6 +201,14 @@ export class RuleBuilder {
     return this;
   }
 
+  /**
+   * Adds a scenario to the rule.
+   * 
+   * @param {string} name - The name of the scenario
+   * @param {StepDefinition[]} steps - Array of step definitions for the scenario
+   * @param {string[]} [tags] - Optional array of tags for the scenario
+   * @returns {RuleBuilder} The builder instance for method chaining
+   */
   addScenario(name: string, steps: StepDefinition[], tags?: string[]): RuleBuilder {
     const scenario = new Scenario(name);
 
@@ -295,6 +233,15 @@ export class RuleBuilder {
     return this;
   }
 
+  /**
+   * Adds a scenario outline to the rule.
+   * 
+   * @param {string} name - The name of the scenario outline
+   * @param {StepDefinition[]} steps - Array of step definitions containing placeholders
+   * @param {string[][]} examples - 2D array representing the examples table
+   * @param {string[]} [tags] - Optional array of tags for the scenario outline
+   * @returns {RuleBuilder} The builder instance for method chaining
+   */
   addScenarioOutline(name: string, steps: StepDefinition[], examples: string[][], tags?: string[]): RuleBuilder {
     const scenarioOutline = new ScenarioTemplate(name);
 
@@ -324,11 +271,22 @@ export class RuleBuilder {
     return this;
   }
 
+  /**
+   * Adds a comment to the rule.
+   * 
+   * @param {string} text - The comment text
+   * @returns {RuleBuilder} The builder instance for method chaining
+   */
   addComment(text: string): RuleBuilder {
     this.rule.addComment(new Comment(text));
     return this;
   }
 
+  /**
+   * Completes the rule definition and returns to the parent feature builder.
+   * 
+   * @returns {GherkinFeatureBuilder} The parent feature builder
+   */
   done(): GherkinFeatureBuilder {
     // Add the rule to the feature and return the parent builder
     this.parent.build().addRule(this.rule);
@@ -336,6 +294,258 @@ export class RuleBuilder {
   }
 }
 
+/**
+ * GherkinFeatureBuilder - A fluent interface for programmatically creating valid Gherkin feature files.
+ * 
+ * @example
+ * ```typescript
+* import { GherkinFeatureBuilder, StepDefinition } from &#x27;./gherkin-feature&#x27;;
+* 
+* // Create a new feature
+* const builder = new GherkinFeatureBuilder(&#x27;Shopping Cart&#x27;, &#x27;As a user, I want to manage my shopping cart&#x27;);
+* 
+* // Add tags
+* builder.addTags([&#x27;@ui&#x27;, &#x27;@cart&#x27;]);
+* 
+* // Add background steps
+* const backgroundSteps: StepDefinition[] = [
+*   { keyword: &#x27;Given&#x27;, text: &#x27;the user is logged in&#x27; },
+*   { keyword: &#x27;And&#x27;, text: &#x27;the shopping cart is empty&#x27; }
+* ];
+* builder.addBackground(backgroundSteps);
+* 
+* // Add a scenario
+* const scenarioSteps: StepDefinition[] = [
+*   { keyword: &#x27;When&#x27;, text: &#x27;the user adds an item to the cart&#x27; },
+*   { keyword: &#x27;Then&#x27;, text: &#x27;the cart should contain 1 item&#x27; }
+* ];
+* builder.addScenario(&#x27;Adding an item to the cart&#x27;, scenarioSteps, [&#x27;@add-item&#x27;]);
+* 
+* // Write to file
+* builder.writeToFile(&#x27;shopping-cart.feature&#x27;);
+* ```
+ */
+export class GherkinFeatureBuilder {
+  private feature: Feature;
+  private document: Document;
+
+  /**
+   * Creates a new Gherkin feature builder.
+   * 
+   * @param {string} name - The name of the feature
+   * @param {string} [description] - Optional description of the feature
+   */
+  constructor(name: string, description?: string) {
+    this.feature = new Feature(name);
+    if (description) {
+      this.feature.withDescription(description);
+    }
+    this.document = new Document();
+    this.document.addFeature(this.feature);
+  }
+
+  /**
+   * Adds or updates the feature description.
+   * 
+   * @param {string} description - The feature description
+   * @returns {GherkinFeatureBuilder} The builder instance for method chaining
+   */
+  withDescription(description: string): GherkinFeatureBuilder {
+    this.feature.withDescription(description);
+    return this;
+  }
+
+  /**
+   * Adds tags to the feature.
+   * 
+   * @param {string[]} tags - Array of tags (e.g., ['@ui', '@regression'])
+   * @returns {GherkinFeatureBuilder} The builder instance for method chaining
+   */
+  addTags(tags: string[]): GherkinFeatureBuilder {
+    tags.forEach(tag => {
+      this.feature.addTag(new Tag(tag));
+    });
+    return this;
+  }
+
+  /**
+   * Adds a background section that runs before each scenario.
+   * 
+   * @param {StepDefinition[]} steps - Array of step definitions for the background
+   * @returns {GherkinFeatureBuilder} The builder instance for method chaining
+   * 
+   * @example
+   * ```typescript
+* builder.addBackground([
+*   { keyword: &#x27;Given&#x27;, text: &#x27;the user is logged in&#x27; },
+*   { keyword: &#x27;And&#x27;, text: &#x27;the shopping cart is empty&#x27; }
+* ]);
+* ```
+   */
+  addBackground(steps: StepDefinition[]): GherkinFeatureBuilder {
+    const background = new Background();
+
+    steps.forEach(step => {
+      const newStep = new Step(step.keyword, step.text);
+      this.addStepData(newStep, step);
+      background.addStep(newStep);
+    });
+
+    this.feature.addBackground(background);
+    return this;
+  }
+
+  /**
+   * Adds a scenario to the feature.
+   * 
+   * @param {string} name - The name of the scenario
+   * @param {StepDefinition[]} steps - Array of step definitions for the scenario
+   * @param {string[]} [tags] - Optional array of tags for the scenario
+   * @returns {GherkinFeatureBuilder} The builder instance for method chaining
+   * 
+   * @example
+   * ```typescript
+* builder.addScenario(&#x27;Adding an item to the cart&#x27;, [
+*   { keyword: &#x27;When&#x27;, text: &#x27;the user adds an item to the cart&#x27; },
+*   { keyword: &#x27;Then&#x27;, text: &#x27;the cart should contain 1 item&#x27; }
+* ], [&#x27;@add-item&#x27;]);
+* ```
+   */
+  addScenario(name: string, steps: StepDefinition[], tags?: string[]): GherkinFeatureBuilder {
+    const scenario = new Scenario(name);
+
+    if (tags) {
+      tags.forEach(tag => {
+        scenario.addTag(new Tag(tag));
+      });
+    }
+
+    steps.forEach(step => {
+      const newStep = new Step(step.keyword, step.text);
+      this.addStepData(newStep, step);
+      scenario.addStep(newStep);
+    });
+
+    this.feature.addScenario(scenario);
+    return this;
+  }
+
+  /**
+   * Adds a scenario outline (template) with examples table for data-driven testing.
+   * 
+   * @param {string} name - The name of the scenario outline
+   * @param {StepDefinition[]} steps - Array of step definitions containing placeholders
+   * @param {string[][]} examples - 2D array representing the examples table (first row is headers)
+   * @param {string[]} [tags] - Optional array of tags for the scenario outline
+   * @returns {GherkinFeatureBuilder} The builder instance for method chaining
+   * 
+   * @example
+   * ```typescript
+* builder.addScenarioOutline(&#x27;Adding different quantities&#x27;, [
+*   { keyword: &#x27;When&#x27;, text: &#x27;the user adds &lt;quantity&gt; of item &quot;&lt;item&gt;&quot;&#x27; },
+*   { keyword: &#x27;Then&#x27;, text: &#x27;the cart total should be $&lt;total&gt;&#x27; }
+* ], [
+*   [&#x27;quantity&#x27;, &#x27;item&#x27;, &#x27;total&#x27;],
+*   [&#x27;1&#x27;, &#x27;T-shirt&#x27;, &#x27;25.00&#x27;],
+*   [&#x27;2&#x27;, &#x27;Socks&#x27;, &#x27;15.98&#x27;]
+* ]);
+* ```
+   */
+  addScenarioOutline(name: string, steps: StepDefinition[], examples: string[][], tags?: string[]): GherkinFeatureBuilder {
+    const scenarioOutline = new ScenarioTemplate(name);
+
+    if (tags) {
+      tags.forEach(tag => {
+        scenarioOutline.addTag(new Tag(tag));
+      });
+    }
+
+    steps.forEach(step => {
+      const newStep = new Step(step.keyword, step.text);
+      this.addStepData(newStep, step);
+      scenarioOutline.addStep(newStep);
+    });
+
+    if (examples && examples.length > 0) {
+      const examplesObj = new Examples().withDataTable(new DataTable(examples));
+      scenarioOutline.addExamples(examplesObj);
+    }
+
+    this.feature.addScenarioTemplate(scenarioOutline);
+    return this;
+  }
+
+  /**
+   * Creates a rule that groups related scenarios.
+   * 
+   * @param {string} name - The name of the rule
+   * @param {string} [description] - Optional description of the rule
+   * @returns {RuleBuilder} A rule builder for adding scenarios to this rule
+   * 
+   * @example
+   * ```typescript
+* builder
+*   .addRule(&#x27;Cart Management&#x27;)
+*     .addScenario(&#x27;Adding items&#x27;, addingSteps)
+*     .addScenario(&#x27;Removing items&#x27;, removingSteps)
+*     .done() // Return to parent builder
+* ```
+   */
+  addRule(name: string, description?: string): RuleBuilder {
+    return new RuleBuilder(this, name, description);
+  }
+
+  /**
+   * Adds a comment to the feature.
+   * 
+   * @param {string} text - The comment text
+   * @returns {GherkinFeatureBuilder} The builder instance for method chaining
+   */
+  addComment(text: string): GherkinFeatureBuilder {
+    this.feature.addComment(new Comment(text));
+    return this;
+  }
+
+  /**
+   * Helper method for adding data to steps
+   */
+  private addStepData(step: Step, definition: StepDefinition): void {
+    if (definition.dataTable) {
+      step.withDataTable(new DataTable(definition.dataTable));
+    }
+
+    if (definition.docString) {
+      step.withDocString(new DocString(definition.docString));
+    }
+  }
+
+  /**
+   * Returns the built Feature object.
+   * 
+   * @returns {Feature} The constructed Feature object
+   */
+  build(): Feature {
+    return this.feature;
+  }
+
+  /**
+   * Returns the Document object containing the feature.
+   * 
+   * @returns {Document} The constructed Document object
+   */
+  buildDocument(): Document {
+    return this.document;
+  }
+
+  /**
+   * Writes the feature to a file at the specified path.
+   * 
+   * @param {string} filePath - The path where the feature file should be written
+   */
+  writeToFile(filePath: string): void {
+    writeFeature(this.feature, filePath);
+  }
+}
 ```
 
 #### example
