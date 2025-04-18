@@ -162,3 +162,125 @@ Feature: Complex Data Transformation and Formatting
       And The Gherkin output should follow standard Given-When-Then structure where appropriate
 
 ```
+
+
+
+
+
+### Best Practices (2025)
+
+```gherkin
+Feature: Web Development Best Practices 2025
+  As a web developer using Create-React-App
+  I want to follow industry best practices
+  So that my applications are secure, performant, and user-friendly
+
+  Rule: Pages must load within 3 seconds
+    Why: Users abandon sites that load slowly, directly impacting conversion rates and SEO rankings
+
+    Scenario: User visits website on mobile device
+      Given the user has a 4G connection
+      When they navigate to any page on the website
+      Then the page should load completely within 3 seconds
+      And interactive elements should be responsive immediately
+
+  Rule: Implement AI-driven personalization
+    Why: In 2025, users expect websites to anticipate their needs and provide personalized experiences
+
+    Scenario: Returning user visits website
+      Given a user has previously interacted with the website
+      When they return to the site
+      Then the content should adapt based on their previous behavior
+      And recommendations should be tailored to their preferences
+
+  Rule: Implement robust security measures following OWASP Top 10
+    Why: OWASP guidelines protect against common vulnerabilities that could lead to data breaches
+
+    Scenario: Protecting against injection attacks
+      Given a form accepts user input
+      When malicious code is entered
+      Then the input should be sanitized
+      And the attack should be logged and blocked
+
+  Rule: Ensure mobile-first responsive design
+    Why: Mobile traffic dominates web usage in 2025, and Google's mobile-first indexing affects SEO rankings
+
+    Scenario: Website viewed on multiple devices
+      Given a user accesses the website on devices of different screen sizes
+      When they interact with any component
+      Then the layout should adapt appropriately to each screen size
+      And all functionality should remain accessible
+
+  Rule: Implement proper CORS policies
+    Why: CORS prevents unauthorized cross-origin requests, protecting against cross-site scripting attacks
+
+    Scenario: API receives cross-origin request
+      Given an API endpoint exists
+      When it receives a request from an unauthorized origin
+      Then the request should be rejected
+      And appropriate CORS headers should be returned
+
+  Rule: Optimize for search engines and web crawlers
+    Why: Proper SEO optimization ensures visibility in search results and drives organic traffic
+
+    Scenario: Googlebot crawls React application
+      Given a React SPA with client-side rendering
+      When Googlebot crawls the application
+      Then all content should be properly indexed
+      And semantic HTML should provide context for content
+
+  Rule: Implement DDoS protection measures
+    Why: DDoS attacks can take down websites, causing downtime and revenue loss
+
+    Scenario: Website experiences traffic spike
+      Given the website receives abnormal traffic volume
+      When the traffic pattern matches known attack signatures
+      Then rate limiting should be applied
+      And legitimate users should still be able to access the site
+
+  Rule: Ensure accessibility compliance (WCAG 2.2)
+    Why: Accessibility is both a legal requirement and ensures all users can access content regardless of disabilities
+
+    Scenario: Screen reader user navigates website
+      Given a user with visual impairment uses a screen reader
+      When they navigate through the website
+      Then all content should be properly announced
+      And interactive elements should be operable via keyboard
+
+  Rule: Implement proper TypeScript typing in React components
+    Why: Strong typing reduces runtime errors and improves code maintainability
+
+    Scenario: Developer creates new React component
+      Given a new component is being developed
+      When props are passed to the component
+      Then all props should have explicit TypeScript interfaces
+      And component state should be properly typed
+
+  Rule: Optimize performance with modern JavaScript techniques
+    Why: Performance optimization directly impacts user experience and conversion rates
+
+    Scenario: Developer implements code optimizations
+      Given a React application with performance bottlenecks
+      When the developer applies ES2025 features and minimizes render-blocking scripts
+      Then the application should load faster
+      And user interactions should be more responsive
+
+  Rule: Implement continuous integration and testing
+    Why: Automated testing ensures code quality and prevents regressions
+
+    Scenario: New feature is developed
+      Given a developer creates a new feature
+      When they submit a pull request
+      Then automated tests should run
+      And code quality checks should be performed before merging
+
+  Rule: Comply with digital privacy regulations
+    Why: Privacy laws like GDPR and newer 2025 regulations require strict data protection measures
+
+    Scenario: User data is collected
+      Given a website collects personal information
+      When a user submits their data
+      Then proper consent should be obtained
+      And data should be stored with encryption and security safeguards
+
+```
