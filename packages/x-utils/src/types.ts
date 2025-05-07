@@ -13,7 +13,7 @@ import { randomUUID as v4, UUID } from "node:crypto";
  *  first
  */
 export class UniqueObject {
-  public _id: UUID;
+  public readonly _id: UUID;
 
   constructor() {
     this._id = v4();
@@ -29,7 +29,7 @@ export class UniqueObject {
  *
  */
 export class PermanentObject {
-  public id: UUID;
+  public readonly id: UUID;
 
   constructor(x:UniqueObject | undefined) {
     this.id = x?._id ?? v4();

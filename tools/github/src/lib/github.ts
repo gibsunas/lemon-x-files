@@ -12,7 +12,7 @@ export async function githubGenerator(
     tree: Tree,
     options: GithubGeneratorSchema
 ) {
-  const config = await readNxJson() || {};
+  const config = await readNxJson(tree) || {};
   config.release = config.release ?? {}
   config.release.projects = ["packages/*"];
 

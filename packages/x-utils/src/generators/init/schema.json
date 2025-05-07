@@ -4,15 +4,24 @@
   "title": "",
   "type": "object",
   "properties": {
+    "directory": {
+      "type": "string",
+      "description": "",
+
+      "x-prompt": "Where is the directory we should start in?"
+    },
+    "logUrl": {
+      "type": "string",
+      "description": "",
+      "$default": "/hookers/sse/empty",
+      "x-prompt": "Where are the server side events emitted? (URL)"
+    },
     "name": {
       "type": "string",
       "description": "",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      },
-      "x-prompt": "What name would you like to use?"
+      "$default": "utilsLogger",
+      "x-prompt": "What name should we use?"
     }
   },
-  "required": ["name"]
+  "required": ["directory"]
 }

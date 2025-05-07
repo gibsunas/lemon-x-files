@@ -1,4 +1,5 @@
 export interface InitGeneratorSchema {
-  name: string;
+  logUrl?: string;
   directory: string;
+  name?: string;
 }

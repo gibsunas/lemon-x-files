@@ -1,0 +1,24 @@
+import React, { useState } from 'react';
+import { LazyLog } from "@melloware/react-logviewer";
+
+const LogViewerPage = () => {
+  const [logUrl] = useState("<%= logUrl %>");
+
+  return (
+    <>
+      <div  style={{ width: '97vw', height: '96vh'}}>
+
+        <LazyLog
+          url={logUrl}
+          eventsource={true}
+          extraLines={2}
+          selectableLines
+          theme={'dark'}
+        />
+      </div>
+    </>
+  );
+};
+
+
+export default LogViewerPage;

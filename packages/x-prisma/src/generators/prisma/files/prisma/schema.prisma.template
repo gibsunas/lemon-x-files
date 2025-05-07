@@ -26,6 +26,14 @@ datasource db {
   url      = env("file::memory:?cache=shared")
 }
 
+// Multiple schemas
+// NOT SUPPORTED YET
+//
+// datasource cold {
+//   provider = "sqlite"
+//   url      = env("file::memory:?cache=cold")
+// }
+
 model <%= name %> {
   id           Int      @id
 }
