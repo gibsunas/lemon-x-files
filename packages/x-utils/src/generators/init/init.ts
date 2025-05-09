@@ -44,6 +44,7 @@ plugins: [`)
       .withPackageJsonPath(`${directory}/package.json`)
       .addDevDependency('@melloware/react-logviewer', '*')
       .installAndFormat();
+<<<<<<< Updated upstream
 
 
 
@@ -132,6 +133,8 @@ plugins: [`)
     .installAndFormat();
 
   // End this bad practice
+=======
+>>>>>>> Stashed changes
 }
 
 export default initGenerator;

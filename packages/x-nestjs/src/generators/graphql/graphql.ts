@@ -139,7 +139,7 @@ Feature: Name
   } as any);
   // console.log(format(document,_options));
 
-  console.dir(t,{ depth: 5})
+  // console.dir(t,{ depth: 5})
   tree.write(t.uri,format(t,_options));
   await formatFiles(tree);
 }

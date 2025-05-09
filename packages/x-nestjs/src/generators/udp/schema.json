@@ -8,6 +8,7 @@
       "type": "string",
       "description": "",
       "x-prompt": "What directory should be updated?"
+<<<<<<< Updated upstream
     },
     "name": {
       "type": "string",
@@ -16,4 +17,9 @@
     }
   },
   "required": ["directory"]
+=======
+    }
+  },
+  "required": []
+>>>>>>> Stashed changes
 }
