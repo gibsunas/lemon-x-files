@@ -1,0 +1,16 @@
+{
+  "name": "x-emberdeck",
+  "version": "0.1.0",
+  "kind": "baml-package",
+  "description": "The 42i lattice as a portable BAML package: vendored lattice, path-equivalence harness, surface generator",
+  "baml": {
+    "manifest": "lattice/baml.toml",
+    "src": "lattice/baml_src",
+    "pin": "lattice/LATTICE_VENDORED"
+  },
+  "tools": [
+    "lattice_paths.py",
+    "surface.py"
+  ],
+  "evidence": "evidence"
+}
