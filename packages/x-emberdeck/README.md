@@ -1,4 +1,4 @@
-# emberdeck — the 42i lattice as a portable BAML package
+# x-emberdeck — the 42i lattice as a portable BAML package
 
 Ported from the `alarm-gate-spike` prototype
 (`james-gibson/alarm-gate-spike`, branch `spike/42i-alarm-gate`), where this
@@ -16,10 +16,10 @@ proxy, G-code gate and collector remain in the prototype.
 | `surface.py` | generates a typed BAML surface and a skill from a live MCP `tools/list` |
 | `evidence/` | the lattice-related artifacts from the prototype's evidence set |
 
-## Why the lattice is vendored here *and* in `energy/`
+## Why the lattice is vendored here *and* in `x-energy`
 
 BAML has no package imports, so every package needs its own copy of the lattice.
-`emberdeck/lattice/` and `energy/baml_src/` are therefore byte-identical by
+`x-emberdeck/lattice/` and `x-energy/baml_src/` are therefore byte-identical by
 design, not by accident — both pin `isotope-baml@6503786`:
 
 ```
@@ -34,7 +34,7 @@ honest.
 ## Running it
 
 ```sh
-cd emberdeck/lattice
+cd packages/x-emberdeck/lattice
 baml check --agent-skill-check off
 baml test  --agent-skill-check off
 baml pack PositionOf --agent-skill-check off    # ~34 MB, build artefact, not committed
@@ -69,6 +69,12 @@ version.
 the lattice-related artifacts are ported here; `byte-safety`, `wire-ownership`
 and the dispatcher-observed runs stay with the harness. Read the manifest as the
 prototype's index, filtered by what is present in this directory.
+
+## As an installer target
+
+`MANIFEST.json` is the grab recipe: the lattice entry point, the pin file, the two
+tools, and the evidence root. It names roots rather than enumerating every file.
+Replace it if the installer expects a different shape.
 
 ## Licence
 

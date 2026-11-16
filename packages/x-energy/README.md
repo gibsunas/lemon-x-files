@@ -1,4 +1,4 @@
-# energy — utility syncs as gated isotope sets
+# x-energy — utility syncs as gated isotope sets
 
 Each sync is expressed twice: as **pure BAML** (the gate) and as **Gherkin** (the
 executable sheet). They are deliberately separate artifacts.
@@ -12,7 +12,7 @@ third should not require changing the first two.
 ## Layout
 
 ```
-energy/
+packages/x-energy/
   baml.toml
   LATTICE_VENDORED            # pin: commit + sha256 per vendored file
   baml_src/
@@ -134,6 +134,13 @@ baml test  --agent-skill-check off
 Neither has been run here: `baml` is a 0.2.5 wrapper reporting
 `baml toolchain not installed (canary)`. The files follow the source repo's
 conventions but are **unverified until those two commands pass**.
+
+## As an installer target
+
+`MANIFEST.json` is the grab recipe: the BAML entry point, the pin file, and the
+isotope and feature roots. It names roots rather than enumerating every file, so
+it cannot drift as scenarios are added. Replace it if the installer expects a
+different shape — it is a convenience, not a contract.
 
 ## Adding a system
 
