@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "cluster": "xcel-sync",
+  "issued_by": "observation",
+  "issued_by_fingerprint": "",
+  "issued_at": "2026-11-16T00:00:00Z",
+  "expires": "2036-01-01T00:00:00Z",
+  "isotopes": [
+    {
+      "id": "xcel/credential",
+      "role": "secret",
+      "endpoint": "",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["xcel/sync/credential"],
+      "hops": 0,
+      "failure_classes": ["credential/missing", "credential/denied", "credential/acl-drift"]
+    },
+    {
+      "id": "xcel/idp-gigya",
+      "role": "idp",
+      "endpoint": "https://accounts.us1.gigya.com/accounts.login",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["xcel/sync/idp-gigya"],
+      "hops": 1,
+      "failure_classes": [
+        "idp/bad-credential",
+        "idp/otp-required",
+        "idp/account-locked",
+        "idp/rate-limited",
+        "idp/unavailable"
+      ]
+    },
+    {
+      "id": "xcel/oidc-handoff",
+      "role": "federation",
+      "endpoint": "https://apim.xcelenergy.com/v3/idp",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["xcel/sync/oidc-handoff"],
+      "hops": 1,
+      "failure_classes": [
+        "oidc/no-session",
+        "oidc/code-rejected",
+        "oidc/pkce-mismatch",
+        "oidc/state-mismatch"
+      ]
+    },
+    {
+      "id": "xcel/salesforce",
+      "role": "session",
+      "endpoint": "https://my.xcelenergy.com/MyAccount/services/authcallback/CustomPKCEEndpoint",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["xcel/sync/salesforce"],
+      "hops": 1,
+      "failure_classes": ["salesforce/callback-error", "salesforce/no-session-token"]
+    },
+    {
+      "id": "xcel/usage",
+      "role": "data",
+      "endpoint": "https://myenergy.xcelenergy.com/myenergy",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["xcel/sync/usage"],
+      "hops": 1,
+      "failure_classes": [
+        "usage/session-expired",
+        "usage/malformed-payload",
+        "usage/empty-window",
+        "usage/odr-unavailable"
+      ]
+    },
+    {
+      "id": "xcel/store",
+      "role": "local",
+      "endpoint": "",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["xcel/sync/store"],
+      "hops": 0,
+      "failure_classes": ["store/schema-drift", "store/locked", "store/write-failed"]
+    }
+  ],
+  "failure_classes": {
+    "credential/missing": { "retry": "never", "human": true, "refuses": ["xcel/idp-gigya"] },
+    "credential/denied": { "retry": "never", "human": true, "refuses": ["xcel/idp-gigya"] },
+    "credential/acl-drift": { "retry": "never", "human": true, "refuses": ["xcel/idp-gigya"] },
+    "idp/bad-credential": { "retry": "never", "human": true, "refuses": ["xcel/oidc-handoff"] },
+    "idp/otp-required": { "retry": "never", "human": true, "refuses": ["xcel/oidc-handoff"] },
+    "idp/account-locked": { "retry": "never", "human": true, "refuses": ["xcel/oidc-handoff"] },
+    "idp/rate-limited": { "retry": "defer", "human": false, "refuses": ["xcel/oidc-handoff"] },
+    "idp/unavailable": { "retry": "defer", "human": false, "refuses": ["xcel/oidc-handoff"] },
+    "oidc/no-session": { "retry": "never", "human": true, "refuses": ["xcel/salesforce"] },
+    "oidc/code-rejected": { "retry": "once", "human": false, "refuses": ["xcel/salesforce"] },
+    "oidc/pkce-mismatch": { "retry": "never", "human": false, "refuses": ["xcel/salesforce"] },
+    "oidc/state-mismatch": { "retry": "never", "human": false, "refuses": ["xcel/salesforce"] },
+    "salesforce/callback-error": { "retry": "once", "human": false, "refuses": ["xcel/usage"] },
+    "salesforce/no-session-token": { "retry": "once", "human": false, "refuses": ["xcel/usage"] },
+    "usage/session-expired": { "retry": "never", "human": true, "refuses": [] },
+    "usage/malformed-payload": { "retry": "once", "human": false, "refuses": [] },
+    "usage/empty-window": { "retry": "never", "human": false, "refuses": [] },
+    "usage/odr-unavailable": { "retry": "next-run", "human": false, "refuses": [] },
+    "store/schema-drift": { "retry": "never", "human": true, "refuses": [] },
+    "store/locked": { "retry": "backoff", "human": false, "refuses": [] },
+    "store/write-failed": { "retry": "once", "human": false, "refuses": [] }
+  }
+}
