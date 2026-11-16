@@ -1,0 +1,91 @@
+{
+  "generated_at": "2026-11-02T19:39:53Z",
+  "harness_commit": "99e39480669812f1bbd1d77413522af61daf1907",
+  "harness_dirty": false,
+  "note": "script_sha256 identifies the code that produced the artifacts; harness_commit is HEAD at generation time and may precede the commit that adds evidence/ to the tree",
+  "script_sha256": {
+    "evidence.py": "494112e91409dcf780fa569a5a4beaf64ade48dd1f34b2fa6c0ace7ed06b4b73",
+    "provenance.py": "ab0d4833a06a8ececaecbf184db8c05742d1ee046f25e58672954def4c93c53f",
+    "collector.py": "45ca064e3b934b06fa0b9cc5fd874a2bba3f7ca9412136f11e7341b954cfd5ee",
+    "crosscheck.py": "c74e3b473b6f9d622cc9a7fdd37254d564ab1da62250ed3f9b52b0caa582a112",
+    "wire_proxy.py": "2b234c294c30b2abed8fdac37b19be341a80ec58594b8c27c8ccbfb1bdbc4fa6",
+    "bytecheck.py": "2d1500d63009e412a1e1b5b8fe1eda9632bf15585d674bce8a1379b7a8ad7427",
+    "lattice_paths.py": "119de27ddb601f366f4be47ad9be5a7f71ebd75b0140029da5edef4cc7b355c1",
+    "lattice/baml_src/lattice.baml": "6645fa80df994564db1d7475353e8ece44a2ccf7cbe20017311ba4f31bbd349a",
+    "lattice/baml_src/policy.baml": "766fca75053ad7f4d9d163a06d559ac4b67765daf711044ae57ef3b3051d62c1",
+    "p1_rung/main.go": "102943b7ae792c13717f84db5d66ea5cb36f003c44490aa59393c8de4fc5237a",
+    "p1_rung/go.mod": "bc4e39f5d8d564cbe0a008f7628091899dc3e76670bf6fb0e6ecda2de917a4e8",
+    "p1_rung/go.sum": "98583c3a52f394f04a0b9370271e3bf8e30974174b61df0b4ed8f9c7b301521b"
+  },
+  "toolchain": {
+    "baml": "baml wrapper 0.2.5",
+    "go": "go version go1.27.2 darwin/arm64",
+    "python": "Python 3.9.6"
+  },
+  "checks": [
+    {
+      "name": "lattice-tests",
+      "claim": "the vendored lattice's own tests run offline and pass",
+      "independence": "self-check: asserts literals against the same BAML source; says nothing about the reference implementation",
+      "verdict": "PASS",
+      "artifact": "evidence/lattice-tests.json"
+    },
+    {
+      "name": "lattice-paths",
+      "claim": "the packed binary and `baml run` are rotations, not variants",
+      "independence": "packaging check: same BAML source, two execution paths. Rules out a stale or mispacked binary; says nothing about the lattice's meaning",
+      "verdict": "PASS",
+      "artifact": "evidence/lattice-paths.json"
+    },
+    {
+      "name": "lattice-vs-reference",
+      "claim": "the vendored BAML reproduces the pinned Go reference, including every deviation kind",
+      "independence": "TRANSCRIPTION, not independence: the BAML was ported from this Go module. Agreement rules out drift; the reference's own tests are the correctness evidence, and they are upstream of this PR",
+      "verdict": "PASS",
+      "artifact": "evidence/lattice-vs-reference.json"
+    },
+    {
+      "name": "byte-safety",
+      "claim": "the byte gate rejects non-ASCII, control bytes, line-ending damage and oversize programs, and round-trips sha256",
+      "independence": "self-check: fixtures with known expected verdicts",
+      "verdict": "PASS",
+      "artifact": "evidence/byte-safety.json"
+    },
+    {
+      "name": "wire-ownership",
+      "claim": "one client owns the wire; a second is refused; preempt moves ownership and ends the previous client; release leaves no owner",
+      "independence": "observed behaviour against a local controller stub \u2014 one writer, one wire",
+      "verdict": "PASS",
+      "artifact": "evidence/wire-ownership.json"
+    },
+    {
+      "name": "rotation-gate",
+      "claim": "a rotation changes the route only; it is refused unless both BAML paths agree on five fixtures, and refused when the binary is missing",
+      "independence": "self-referential: BAML vs BAML. Rules out a stale build, not a wrong lattice; the independent check is lattice-vs-reference",
+      "verdict": "PASS",
+      "artifact": "evidence/rotation-gate.json"
+    }
+  ],
+  "not_reproduced_here": [
+    {
+      "claim": "plugin veto timings (evidence.json)",
+      "why": "needs a dispatcher checkout; the deck is not in this repo"
+    },
+    {
+      "claim": "P0 failure capture (p0-evidence.json)",
+      "why": "needs a dispatcher checkout and the bridge"
+    },
+    {
+      "claim": "P1 distance-vs-outcome (p1-evidence.json)",
+      "why": "needs a dispatcher checkout; distances are from the Go reference, not BAML"
+    },
+    {
+      "claim": "deck-vs-trail counter cross-check (crosscheck.py)",
+      "why": "needs both processes running against a dispatcher"
+    },
+    {
+      "claim": "the proxy patch reconstructs mcp_proxy.py byte for byte",
+      "why": "the pre-image file is not in this PR; the check is local"
+    }
+  ]
+}
