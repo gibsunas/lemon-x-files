@@ -1,0 +1,91 @@
+{
+  "claim": "the packed binary and `baml run` are rotations, not variants",
+  "independence": "packaging check: same BAML source, two execution paths. Rules out a stale or mispacked binary; says nothing about the lattice's meaning",
+  "ran_at": "2026-11-02T19:39:57Z",
+  "harness_commit": "99e39480669812f1bbd1d77413522af61daf1907",
+  "harness_dirty": false,
+  "script_sha256": {
+    "evidence.py": "494112e91409dcf780fa569a5a4beaf64ade48dd1f34b2fa6c0ace7ed06b4b73",
+    "provenance.py": "ab0d4833a06a8ececaecbf184db8c05742d1ee046f25e58672954def4c93c53f",
+    "collector.py": "45ca064e3b934b06fa0b9cc5fd874a2bba3f7ca9412136f11e7341b954cfd5ee",
+    "crosscheck.py": "c74e3b473b6f9d622cc9a7fdd37254d564ab1da62250ed3f9b52b0caa582a112",
+    "wire_proxy.py": "2b234c294c30b2abed8fdac37b19be341a80ec58594b8c27c8ccbfb1bdbc4fa6",
+    "bytecheck.py": "2d1500d63009e412a1e1b5b8fe1eda9632bf15585d674bce8a1379b7a8ad7427",
+    "lattice_paths.py": "119de27ddb601f366f4be47ad9be5a7f71ebd75b0140029da5edef4cc7b355c1",
+    "lattice/baml_src/lattice.baml": "6645fa80df994564db1d7475353e8ece44a2ccf7cbe20017311ba4f31bbd349a",
+    "lattice/baml_src/policy.baml": "766fca75053ad7f4d9d163a06d559ac4b67765daf711044ae57ef3b3051d62c1",
+    "p1_rung/main.go": "102943b7ae792c13717f84db5d66ea5cb36f003c44490aa59393c8de4fc5237a",
+    "p1_rung/go.mod": "bc4e39f5d8d564cbe0a008f7628091899dc3e76670bf6fb0e6ecda2de917a4e8",
+    "p1_rung/go.sum": "98583c3a52f394f04a0b9370271e3bf8e30974174b61df0b4ed8f9c7b301521b"
+  },
+  "command": "./lattice_paths.py --bin lattice/forty-two-i --project lattice --json",
+  "toolchain": {
+    "baml": "baml wrapper 0.2.5",
+    "go": "go version go1.27.2 darwin/arm64",
+    "python": "Python 3.9.6"
+  },
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check": "five fixtures agree across packed and exec",
+      "verdict": "PASS",
+      "evidence": "5/5 agree"
+    },
+    {
+      "check": "each fixture carries input and output digests",
+      "verdict": "PASS",
+      "evidence": "attestation_sha256=30a7d58e2a815b814c440559fe5ef9feaafd1a7cc6134a276b1d0efd9c255d97"
+    }
+  ],
+  "raw": {
+    "packed_bin_sha256": "cc34fb01bcc76a34f0fb2a56c6e43f1a26234942828ff2b88cc84c6fb607accc",
+    "attestation_sha256": "30a7d58e2a815b814c440559fe5ef9feaafd1a7cc6134a276b1d0efd9c255d97",
+    "fixtures": [
+      {
+        "fixture": {},
+        "input_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "packed_sha256": "68634abffa9f122e7058caec5ab590290ad408796647700513c8b3c8e0367a92",
+        "exec_sha256": "68634abffa9f122e7058caec5ab590290ad408796647700513c8b3c8e0367a92",
+        "agree": true
+      },
+      {
+        "fixture": {
+          "called_during_degraded": 1
+        },
+        "input_sha256": "599d79e5228a5dba3bdceadf7a8267297a45771eb22e06d9dd666a8a19f2a7bb",
+        "packed_sha256": "74e5e8538d7e2063508a3fe9b4191e94fd0c82d9a868849f54b1e6c57f819360",
+        "exec_sha256": "74e5e8538d7e2063508a3fe9b4191e94fd0c82d9a868849f54b1e6c57f819360",
+        "agree": true
+      },
+      {
+        "fixture": {
+          "called_during_degraded": 2
+        },
+        "input_sha256": "ed810dac1f6c8d3bc745c34d93d588b74f6ad8d448a084995e8311f3c07636dd",
+        "packed_sha256": "7fab593393303eabe3cfeac54b73ba9f0720679c35e6692fb3c7b85698916971",
+        "exec_sha256": "7fab593393303eabe3cfeac54b73ba9f0720679c35e6692fb3c7b85698916971",
+        "agree": true
+      },
+      {
+        "fixture": {
+          "called_during_degraded": 3
+        },
+        "input_sha256": "231af6ea757196b13d58ce8fe0248d0e6d5f8cc4ff36fef3dbe8b9d7d5020944",
+        "packed_sha256": "d6243cc778818aac5e8a6054ae95a13a4b997dc0374f9686d761f42e776b580b",
+        "exec_sha256": "d6243cc778818aac5e8a6054ae95a13a4b997dc0374f9686d761f42e776b580b",
+        "agree": true
+      },
+      {
+        "fixture": {
+          "called_during_degraded": 2,
+          "called_during_regression": 1
+        },
+        "input_sha256": "323ddf182cd129f3a5f87d9d5c66017cdbaad9263c9b6b3e1358c375de3f6840",
+        "packed_sha256": "d6243cc778818aac5e8a6054ae95a13a4b997dc0374f9686d761f42e776b580b",
+        "exec_sha256": "d6243cc778818aac5e8a6054ae95a13a4b997dc0374f9686d761f42e776b580b",
+        "agree": true
+      }
+    ],
+    "stderr_tail": []
+  }
+}
