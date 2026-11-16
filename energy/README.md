@@ -1,72 +1,111 @@
-# energy — Xcel sync as a gated isotope set
+# energy — utility syncs as gated isotope sets
 
-The Xcel utility sync expressed twice: as **pure BAML** (the gate) and as
-**Gherkin** (the executable sheet). The two are deliberately separate artifacts.
+Each sync is expressed twice: as **pure BAML** (the gate) and as **Gherkin** (the
+executable sheet). They are deliberately separate artifacts.
 
 - The BAML decides *whether* to cross a boundary and *what to call the failure*.
-- The Gherkin decides *what must be true* and is the live evidence.
+- The Gherkin decides *what must be true*, and is the live evidence.
+
+Two systems so far: `xcel` and `solaredge`. The layout is the pattern; adding a
+third should not require changing the first two.
 
 ## Layout
 
 ```
 energy/
   baml.toml
-  LATTICE_VENDORED          # pin: commit + sha256 per vendored file
+  LATTICE_VENDORED            # pin: commit + sha256 per vendored file
   baml_src/
-    lattice.baml            # vendored — 42i weights, rungs, distance, position
-    policy.baml             # vendored — Decide(Deviations, Policy)
-    energy.baml             # ours — Stage, FailureClass, Remedy, Classify, Evaluate
-  isotopes/
-    xcel-sync.isotopes.json # 6 isotopes, 21 failure classes
-  features/
-    credential.feature      # keychain
-    idp-gigya.feature       # accounts.login
-    oidc-handoff.feature    # PKCE authorize/token
-    salesforce.feature      # session establishment
-    usage.feature           # myenergy data
-    store.feature           # SQLite
+    lattice.baml              # vendored — 42i weights, rungs, distance, position
+    policy.baml               # vendored — Decide(Deviations, Policy)
+    xcel.baml                 # ours — Xcel* symbols
+    solaredge.baml            # ours — SolarEdge* symbols
+  xcel/
+    isotopes/xcel-sync.isotopes.json
+    features/{credential,idp-gigya,oidc-handoff,salesforce,usage,store}.feature
+  solaredge/
+    isotopes/solaredge-sync.isotopes.json
+    features/{session,cognito,sites,window,series,panels,store}.feature
 ```
+
+## Symbol prefixes are mandatory
+
+Every file in `baml_src/` compiles into **one package**, so two systems cannot
+both declare `enum Stage`. Each system prefixes every symbol it introduces:
+
+```baml
+enum XcelStage { ... }        function XcelClassify(...)      -> XcelFailureClass
+enum SolarEdgeStage { ... }   function SolarEdgeClassify(...) -> SolarEdgeFailureClass
+```
+
+Only the vendored `lattice.baml` / `policy.baml` symbols are unprefixed
+(`Deviations`, `Policy`, `Decide`, `PositionOf`, `Distance`). Those are shared
+and must not be redefined.
 
 ## Why the secret cannot leak into the BAML
 
 `lattice.baml` and `policy.baml` are pure functions: no model, no provider, no
-network. BAML has no FFI, so a vendored lattice cannot read the keychain even if
-a future edit wanted it to. The isolation is **structural**, not a policy that
-can be weakened. The credential lives in one process (the signed `adhd` host) and
-never crosses into this directory.
+network. BAML has no FFI, so a vendored lattice cannot read a keychain or Safari
+localStorage even if a future edit wanted it to. The isolation is **structural**,
+not a policy that can be weakened.
+
+Credentials stay in one process — the signed `adhd` host, or Safari for
+SolarEdge's refresh token — and never cross into this directory.
 
 ## Vendoring
 
 `baml_src/lattice.baml` and `baml_src/policy.baml` are copies, not dependencies —
 BAML has no package imports yet. `LATTICE_VENDORED` pins the source commit and a
-sha256 per file; `verify.sh` in the source repo fails if a copy drifts.
+sha256 per file; `scripts/verify.sh` in the source repo fails if a copy drifts.
 
-Verified 2026-11-16: both files are byte-identical to
-`isotope-baml@6503786`.
+Verified 2026-11-16: both files are byte-identical to `isotope-baml@6503786`.
 
-Licence: **AGPL-3.0-only**, carried by the SPDX header in each file. This matches
-the rest of the lab and is the intended arrangement for a vendored lattice.
+Licence: **AGPL-3.0-only**, carried by the SPDX header in each file.
 
-## The six isotopes
+## The isotopes
 
-| Isotope | Boundary | Reaches network | Fails closed |
-|---|---|---|---|
-| `xcel/credential` | keychain | no | yes — refuses everything after |
-| `xcel/idp-gigya` | `accounts.us1.gigya.com` | yes | yes |
-| `xcel/oidc-handoff` | `apim.xcelenergy.com/v3/idp` | yes | yes |
-| `xcel/salesforce` | `my.xcelenergy.com/MyAccount` | yes | yes |
-| `xcel/usage` | `myenergy.xcelenergy.com` | yes | no — data only |
-| `xcel/store` | local SQLite | no | no — never blocks a retry |
+### xcel — 6 isotopes, 21 failure classes
 
-Each failure class carries `retry`, `human`, and `refuses`. **Only
-`retry: NEVER` plus `human: true` pages.** That distinction is the whole point:
-the original job failed 65 times because every cause collapsed into one
-"auth failed" alarm.
+| Isotope | Boundary | Fails closed |
+|---|---|---|
+| `xcel/credential` | keychain | yes |
+| `xcel/idp-gigya` | `accounts.us1.gigya.com` | yes |
+| `xcel/oidc-handoff` | `apim.xcelenergy.com/v3/idp` | yes |
+| `xcel/salesforce` | `my.xcelenergy.com/MyAccount` | yes |
+| `xcel/usage` | `myenergy.xcelenergy.com` | no |
+| `xcel/store` | local SQLite | no |
+
+### solaredge — 7 isotopes, 25 failure classes
+
+| Isotope | Boundary | Fails closed |
+|---|---|---|
+| `solaredge/session` | Safari localStorage | yes |
+| `solaredge/cognito` | Cognito token endpoint | yes |
+| `solaredge/sites` | `/services/sitelist` | no — `--site-id` continues |
+| `solaredge/window` | local arithmetic | no |
+| `solaredge/series` | `/services/dashboard` | no |
+| `solaredge/panels` | `/services/layout` | no |
+| `solaredge/store` | local SQLite | no |
+
+## Only one combination pages
+
+Each class carries `retry`, `human`, and `refuses`:
+
+```json
+"idp/otp-required":   { "retry": "never", "human": true,  "refuses": ["xcel/oidc-handoff"] }
+"idp/rate-limited":   { "retry": "defer", "human": false, "refuses": ["xcel/oidc-handoff"] }
+"usage/empty-window": { "retry": "never", "human": false, "refuses": [] }
+```
+
+**`retry: never` plus `human: true` is the only combination that pages.** A
+deferred transport failure is recorded but should not wake anyone until it
+recurs past a threshold. `refuses` stops one cause producing four alarms.
 
 `Evaluate(class)` returns the whole decision in one call:
 
 ```baml
-Evaluate(FailureClass.IDP_OTP_REQUIRED)
+XcelEvaluate(XcelFailureClass.IDP_OTP_REQUIRED)
+SolarEdgeEvaluate(SolarEdgeFailureClass.SESSION_NOT_SIGNED_IN)
 # failure_class, retry, human, refuses, distance, rung, rung_name, page, allowed
 ```
 
@@ -74,12 +113,15 @@ Evaluate(FailureClass.IDP_OTP_REQUIRED)
 
 | Claim | Status |
 |---|---|
-| Gigya `accounts.login` reachable, `403042` = bad credential | verified live |
-| Token endpoint `400` on an invalid code | verified live |
-| OIDC/PKCE redirect chain | verified live |
-| Screen set fields `loginID`, `password`, `code` | verified from `accounts.getScreenSets` |
-| OTP codes other than `403042` | **not** verified — set as booleans, never invented |
-| REST session recognized by the OIDC OP | **open question** (`oidc/no-session`) |
+| Xcel: `accounts.login` reachable, `403042` = bad credential | verified live |
+| Xcel: token endpoint `400` on an invalid code | verified live |
+| Xcel: OIDC/PKCE redirect chain, screen-set field names | verified live |
+| Xcel: OTP codes other than `403042` | **not** verified — set as booleans |
+| Xcel: REST session recognized by the OIDC OP | **open question** |
+| SolarEdge: limits 8/31/90 days per granularity | verified in `api.py` |
+| SolarEdge: 401/403 retry-once, 429 Retry-After, 400/404/422 `ApiError` | verified in `client.py` |
+| SolarEdge: token rotation write-back hazard | verified in `auth.py` |
+| SolarEdge: provider error payload shapes | **not** verified — set as booleans |
 | BAML type-checks and tests pass | **not run** — no toolchain installed |
 
 ## Running the checks
@@ -90,13 +132,15 @@ baml test  --agent-skill-check off
 ```
 
 Neither has been run here: `baml` is a 0.2.5 wrapper reporting
-`baml toolchain not installed (canary)`. The files are written to the source
-repo's conventions but are **unverified until those two commands pass**.
+`baml toolchain not installed (canary)`. The files follow the source repo's
+conventions but are **unverified until those two commands pass**.
 
-## Adding a failure class
+## Adding a system
 
-1. Add it to `FailureClass` and to `RemedyFor` in `baml_src/energy.baml`.
-2. Add it to `failure_classes` in `isotopes/xcel-sync.isotopes.json`.
-3. Add a `Scenario` to that isotope's feature that asserts the class name.
-4. Do not invent a provider error code. Pin it from a live response and record
+1. `mkdir -p <system>/{isotopes,features}` and add `baml_src/<system>.baml`.
+2. Prefix every symbol in it with the system name.
+3. Add `<system>/isotopes/<system>-sync.isotopes.json` with the same schema.
+4. One feature per isotope; every scenario asserts a class name.
+5. Do not invent a provider error code. Pin it from a live response and record
    the date. Only `403042` is verified today.
+6. Update the two tables above.

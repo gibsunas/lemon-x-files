@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "cluster": "solaredge-sync",
+  "issued_by": "observation",
+  "issued_by_fingerprint": "",
+  "issued_at": "2026-11-16T00:00:00Z",
+  "expires": "2036-01-01T00:00:00Z",
+  "isotopes": [
+    {
+      "id": "solaredge/session",
+      "role": "session",
+      "endpoint": "https://monitoring.solaredge.com",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["solaredge/sync/session"],
+      "hops": 0,
+      "failure_classes": ["session/no-tab", "session/not-signed-in", "session/safari-blocked"]
+    },
+    {
+      "id": "solaredge/cognito",
+      "role": "idp",
+      "endpoint": "https://cognito-idp.us-east-1.amazonaws.com",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["solaredge/sync/cognito"],
+      "hops": 1,
+      "failure_classes": [
+        "cognito/refresh-rejected",
+        "cognito/unreachable",
+        "cognito/malformed",
+        "cognito/rotation-unpersisted"
+      ]
+    },
+    {
+      "id": "solaredge/sites",
+      "role": "discovery",
+      "endpoint": "https://monitoring.solaredge.com/services/sitelist",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["solaredge/sync/sites"],
+      "hops": 1,
+      "failure_classes": [
+        "sites/unavailable",
+        "sites/none-active",
+        "sites/not-visible",
+        "sites/malformed"
+      ]
+    },
+    {
+      "id": "solaredge/window",
+      "role": "policy",
+      "endpoint": "",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["solaredge/sync/window"],
+      "hops": 0,
+      "failure_classes": ["window/too-wide", "window/inverted"]
+    },
+    {
+      "id": "solaredge/series",
+      "role": "data",
+      "endpoint": "https://monitoring.solaredge.com/services/dashboard",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["solaredge/sync/series"],
+      "hops": 1,
+      "failure_classes": [
+        "series/unauthorized",
+        "series/rate-limited",
+        "series/rejected",
+        "series/non-json",
+        "series/api-error",
+        "series/empty"
+      ]
+    },
+    {
+      "id": "solaredge/panels",
+      "role": "data",
+      "endpoint": "https://monitoring.solaredge.com/services/layout",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["solaredge/sync/panels"],
+      "hops": 1,
+      "failure_classes": [
+        "panels/no-topology",
+        "panels/inverter-changed",
+        "panels/no-data"
+      ]
+    },
+    {
+      "id": "solaredge/store",
+      "role": "local",
+      "endpoint": "",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["solaredge/sync/store"],
+      "hops": 0,
+      "failure_classes": ["store/schema-drift", "store/locked", "store/write-failed"]
+    }
+  ],
+  "failure_classes": {
+    "session/no-tab": { "retry": "never", "human": true, "refuses": ["solaredge/cognito"] },
+    "session/not-signed-in": { "retry": "never", "human": true, "refuses": ["solaredge/cognito"] },
+    "session/safari-blocked": { "retry": "never", "human": true, "refuses": ["solaredge/cognito"] },
+    "cognito/refresh-rejected": { "retry": "never", "human": true, "refuses": ["solaredge/sites", "solaredge/series"] },
+    "cognito/unreachable": { "retry": "defer", "human": false, "refuses": ["solaredge/sites", "solaredge/series"] },
+    "cognito/malformed": { "retry": "once", "human": false, "refuses": ["solaredge/sites", "solaredge/series"] },
+    "cognito/rotation-unpersisted": { "retry": "never", "human": true, "refuses": [] },
+    "sites/unavailable": { "retry": "once", "human": false, "refuses": [] },
+    "sites/none-active": { "retry": "never", "human": true, "refuses": ["solaredge/series"] },
+    "sites/not-visible": { "retry": "never", "human": true, "refuses": ["solaredge/series"] },
+    "sites/malformed": { "retry": "once", "human": false, "refuses": [] },
+    "window/too-wide": { "retry": "never", "human": false, "refuses": [] },
+    "window/inverted": { "retry": "never", "human": false, "refuses": [] },
+    "series/unauthorized": { "retry": "never", "human": true, "refuses": ["solaredge/panels"] },
+    "series/rate-limited": { "retry": "defer", "human": false, "refuses": [] },
+    "series/rejected": { "retry": "never", "human": false, "refuses": [] },
+    "series/non-json": { "retry": "once", "human": false, "refuses": [] },
+    "series/api-error": { "retry": "once", "human": false, "refuses": [] },
+    "series/empty": { "retry": "never", "human": false, "refuses": [] },
+    "panels/no-topology": { "retry": "next-run", "human": false, "refuses": [] },
+    "panels/inverter-changed": { "retry": "never", "human": true, "refuses": [] },
+    "panels/no-data": { "retry": "next-run", "human": false, "refuses": [] },
+    "store/schema-drift": { "retry": "never", "human": true, "refuses": [] },
+    "store/locked": { "retry": "backoff", "human": false, "refuses": [] },
+    "store/write-failed": { "retry": "once", "human": false, "refuses": [] }
+  }
+}
