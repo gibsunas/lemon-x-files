@@ -1,13 +1,13 @@
-# x-energy — utility syncs as gated isotope sets
+# x-energy — energy boundaries as gated isotope sets
 
-Each sync is expressed twice: as **pure BAML** (the gate) and as **Gherkin** (the
-executable sheet). They are deliberately separate artifacts.
+Each boundary is expressed twice: as **pure BAML** (the gate) and as **Gherkin**
+(the executable sheet). They are deliberately separate artifacts.
 
 - The BAML decides *whether* to cross a boundary and *what to call the failure*.
 - The Gherkin decides *what must be true*, and is the live evidence.
 
-Two systems so far: `xcel` and `solaredge`. The layout is the pattern; adding a
-third should not require changing the first two.
+Three systems so far: `xcel`, `solaredge` and `cyberpower`. The layout is the
+pattern; adding a fourth should not require changing the first three.
 
 ## Layout
 
@@ -20,12 +20,16 @@ packages/x-energy/
     policy.baml               # vendored — Decide(Deviations, Policy)
     xcel.baml                 # ours — Xcel* symbols
     solaredge.baml            # ours — SolarEdge* symbols
+    cyberpower.baml           # ours — CyberPower* symbols
   xcel/
     isotopes/xcel-sync.isotopes.json
     features/{credential,idp-gigya,oidc-handoff,salesforce,usage,store}.feature
   solaredge/
     isotopes/solaredge-sync.isotopes.json
     features/{session,cognito,sites,window,series,panels,store}.feature
+  cyberpower/
+    isotopes/cyberpower-ups.isotopes.json
+    features/{snmp,store}.feature
 ```
 
 ## Symbol prefixes are mandatory
@@ -36,6 +40,7 @@ both declare `enum Stage`. Each system prefixes every symbol it introduces:
 ```baml
 enum XcelStage { ... }        function XcelClassify(...)      -> XcelFailureClass
 enum SolarEdgeStage { ... }   function SolarEdgeClassify(...) -> SolarEdgeFailureClass
+enum CyberPowerStage { ... }  function CyberPowerClassify(...) -> CyberPowerFailureClass
 ```
 
 Only the vendored `lattice.baml` / `policy.baml` symbols are unprefixed
@@ -87,6 +92,21 @@ Licence: **AGPL-3.0-only**, carried by the SPDX header in each file.
 | `solaredge/panels` | `/services/layout` | no |
 | `solaredge/store` | local SQLite | no |
 
+### cyberpower — 2 isotopes, 8 failure classes
+
+| Isotope | Boundary | Fails closed |
+|---|---|---|
+| `cyberpower/snmp` | UDP 161, the card's CPS-MIB group | yes — no samples on a failed poll |
+| `cyberpower/store` | local SQLite | yes — refuses a newer schema |
+
+The CyberPower unit is a CPS `OR1500LCDRT2U` with an `RMCARD205` network card;
+it answers SNMP v1 read and is **not** a USB HID unit, so `nutdrv_qx` is not the
+driver. The collector keys the store by **unit label**, not by address: a unit
+that does not answer is a recorded `unreachable` run, a unit that answers badly
+is `error`, and only an unsupported card pages. The card's Event Log and Status
+Records — the only place a finished low-voltage event is timestamped — are not
+named yet; they need a session isotope once the administrator login exists.
+
 ## Only one combination pages
 
 Each class carries `retry`, `human`, and `refuses`:
@@ -106,6 +126,7 @@ recurs past a threshold. `refuses` stops one cause producing four alarms.
 ```baml
 XcelEvaluate(XcelFailureClass.IDP_OTP_REQUIRED)
 SolarEdgeEvaluate(SolarEdgeFailureClass.SESSION_NOT_SIGNED_IN)
+CyberPowerEvaluate(CyberPowerFailureClass.SNMP_UNREACHABLE)
 # failure_class, retry, human, refuses, distance, rung, rung_name, page, allowed
 ```
 
@@ -122,7 +143,12 @@ SolarEdgeEvaluate(SolarEdgeFailureClass.SESSION_NOT_SIGNED_IN)
 | SolarEdge: 401/403 retry-once, 429 Retry-After, 400/404/422 `ApiError` | verified in `client.py` |
 | SolarEdge: token rotation write-back hazard | verified in `auth.py` |
 | SolarEdge: provider error payload shapes | **not** verified — set as booleans |
-| BAML type-checks and tests pass | **not run** — no toolchain installed |
+| CyberPower: `OR1500LCDRT2U` + `RMCARD205` read over SNMP v1 | verified live 2026-11-16 |
+| CyberPower: input line, AVR/transfer state, battery group | verified live |
+| CyberPower: a second unit configured and possibly unreachable | modelled; second unit not on the wire |
+| CyberPower: Event Log / Status Records time-anchoring a past event | **not implemented** — admin login |
+| BAML type-checks | verified 2026-11-16 — `baml check`, 5 files |
+| BAML tests | 22 pass, 1 pre-existing xcel failure; cyberpower 6/6 |
 
 ## Running the checks
 
@@ -131,9 +157,11 @@ baml check --agent-skill-check off
 baml test  --agent-skill-check off
 ```
 
-Neither has been run here: `baml` is a 0.2.5 wrapper reporting
-`baml toolchain not installed (canary)`. The files follow the source repo's
-conventions but are **unverified until those two commands pass**.
+Run from this directory on 2026-11-16: `check` finished over 5 files; `test`
+returned 22 passed and 1 failed. The failure is the xcel test
+`an OTP challenge pages and refuses the next boundary` (expects rung 2, gets 1),
+which predates the cyberpower system and is filed separately. The six
+cyberpower tests pass.
 
 ## As an installer target
 
