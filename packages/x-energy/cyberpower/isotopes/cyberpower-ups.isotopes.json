@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "cluster": "cyberpower-ups",
+  "issued_by": "observation",
+  "issued_by_fingerprint": "",
+  "issued_at": "2026-11-16T00:00:00Z",
+  "expires": "2036-01-01T00:00:00Z",
+  "isotopes": [
+    {
+      "id": "cyberpower/snmp",
+      "role": "transport",
+      "endpoint": "snmp://<unit>:161/1.3.6.1.4.1.3808.1.1.1",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["cyberpower/ups/poll"],
+      "hops": 1,
+      "failure_classes": [
+        "snmp/unreachable",
+        "snmp/malformed-response",
+        "snmp/error-status",
+        "snmp/unsupported"
+      ]
+    },
+    {
+      "id": "cyberpower/store",
+      "role": "local",
+      "endpoint": "",
+      "position": { "real": 42, "imaginary": 0, "rung": 0 },
+      "skills": ["cyberpower/ups/store"],
+      "hops": 0,
+      "failure_classes": [
+        "store/schema-drift",
+        "store/migration-failed",
+        "store/locked",
+        "store/write-failed"
+      ]
+    }
+  ],
+  "failure_classes": {
+    "snmp/unreachable": { "retry": "next-run", "human": false, "refuses": [] },
+    "snmp/malformed-response": { "retry": "once", "human": false, "refuses": [] },
+    "snmp/error-status": { "retry": "once", "human": false, "refuses": [] },
+    "snmp/unsupported": { "retry": "never", "human": true, "refuses": ["cyberpower/snmp"] },
+    "store/schema-drift": { "retry": "never", "human": true, "refuses": [] },
+    "store/migration-failed": { "retry": "never", "human": true, "refuses": ["cyberpower/store"] },
+    "store/locked": { "retry": "backoff", "human": false, "refuses": [] },
+    "store/write-failed": { "retry": "once", "human": false, "refuses": [] }
+  }
+}

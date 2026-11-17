@@ -2,7 +2,7 @@
   "name": "x-energy",
   "version": "0.1.0",
   "kind": "baml-package",
-  "description": "Xcel and SolarEdge sync: failure-class isotopes, gate policy, and gherkin sheets",
+  "description": "Xcel, SolarEdge and CyberPower: failure-class isotopes, gate policy, and gherkin sheets",
   "baml": {
     "manifest": "baml.toml",
     "src": "baml_src",
@@ -10,10 +10,12 @@
   },
   "isotopes": [
     "xcel/isotopes/xcel-sync.isotopes.json",
-    "solaredge/isotopes/solaredge-sync.isotopes.json"
+    "solaredge/isotopes/solaredge-sync.isotopes.json",
+    "cyberpower/isotopes/cyberpower-ups.isotopes.json"
   ],
   "features": [
     "xcel/features",
-    "solaredge/features"
+    "solaredge/features",
+    "cyberpower/features"
   ]
 }
