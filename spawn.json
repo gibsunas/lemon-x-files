@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "what": "The slots an agent resolves to spawn a seed, and the plan it follows once they are bound.",
+  "why": "A decision tree makes an agent choose before it can check anything. Slots are questions with defaults, so an agent can bind what it can infer and ask only for what it cannot. The plan runs in parallel branches, and each branch ends with a small failure it provokes on purpose — an agent can react to that, and it does not have to hold the whole shape in its head.",
+  "invariants": [
+    "A slot has a default whenever a defensible one exists; an agent may bind it and move on.",
+    "A branch is independent: it can start before, after, or alongside its siblings.",
+    "Every check has a provoke: the smallest edit that should make it fail. Run the provoke once; if the check stays green, the check is a sentence.",
+    "What the workspace claims is recorded in seed.json. A check that is not adopted is recorded as not adopted, not silently dropped."
+  ],
+  "slots": [
+    {
+      "name": "name",
+      "question": "What is the site called? It becomes the repository, the folder and the base path.",
+      "example": "le.ad",
+      "default": null,
+      "required": true,
+      "pattern": "^[a-z0-9][a-z0-9.-]{1,40}$"
+    },
+    {
+      "name": "origin",
+      "question": "Where will it be published?",
+      "example": "https://james-gibson.github.io/le.ad/",
+      "default": "https://<owner>.github.io/<name>/",
+      "derive": "from name and the git owner"
+    },
+    {
+      "name": "base",
+      "question": "What path is it mounted at? A project site is /<name>/; a user site is /.",
+      "example": "/le.ad/",
+      "default": "/<name>/",
+      "derive": "from origin"
+    },
+    {
+      "name": "title",
+      "question": "What is the one line a reader sees?",
+      "example": "le.ad — an empty hot desk",
+      "default": "<name>",
+      "required": true
+    },
+    {
+      "name": "start",
+      "question": "How should it be started: install a template, write the files, or use a CDN?",
+      "example": "install",
+      "default": "install",
+      "choices": ["install", "write", "cdn"],
+      "notes": "install clones a template from this repository; write produces the six files by hand; cdn consumes components with no build step."
+    },
+    {
+      "name": "checks",
+      "question": "Which checks does the workspace claim? Claim only what you will run.",
+      "example": ["build", "links", "a11y"],
+      "default": ["build", "links"],
+      "choices": ["build", "links", "a11y", "contrast", "overflow", "placeholder"],
+      "notes": "A check you do not claim is not a failure — but it must be recorded as not claimed, so nobody reads the build as a guarantee it never made."
+    },
+    {
+      "name": "licence",
+      "question": "Which licence?",
+      "example": "AGPL-3.0-only",
+      "default": "AGPL-3.0-only"
+    }
+  ],
+  "plan": {
+    "bind": {
+      "step": "Resolve the slots, write them to seed.json, and stop asking.",
+      "check": "seed.json parses and every required slot is non-empty.",
+      "provoke": "Delete `title` and re-read it; the reader must refuse rather than default silently."
+    },
+    "branches": [
+      {
+        "id": "start",
+        "parallel": true,
+        "steps": [
+          "install: clone this repository into <workspace>/lemon-x-files and run init.sh with the bound name and base",
+          "write: emit index.html, src/main.tsx, src/App.tsx, package.json (homepage), vite.config.ts (base), .github/workflows/deploy.yml",
+          "cdn: emit one page with the component tags and no build step"
+        ],
+        "check": "the workspace serves one page at the bound base path",
+        "provoke": "change base to /wrong/ without changing the mount; the page must 404 its own assets"
+      },
+      {
+        "id": "content",
+        "parallel": true,
+        "steps": [
+          "add the first page and its frontmatter",
+          "derive the navigation from the file tree rather than writing a nav array"
+        ],
+        "check": "the new page answers at its path with a title in the shell",
+        "provoke": "rename the file without editing links; the guard must name the broken link"
+      },
+      {
+        "id": "publish",
+        "parallel": true,
+        "steps": [
+          "create the repository and push to main",
+          "set Pages to GitHub Actions",
+          "let the workflow run npm ci && npm run build — a local build is optional"
+        ],
+        "check": "the deployed origin answers 200 for / and for one deep link",
+        "provoke": "push a commit with a failing type; the deploy must stop rather than publish"
+      }
+    ],
+    "converge": {
+      "step": "Record what the workspace claims, then run the claimed checks once.",
+      "check": "seed.json lists the claimed checks, and each one runs",
+      "provoke": "add a TODO to a page; the placeholder check, if claimed, refuses the build"
+    },
+    "on_failure": [
+      "A branch failure is local: fix it, re-run that branch's check, and leave the others alone.",
+      "A converge failure is a claim that is not true: either fix it or unclaim the check in seed.json, with a reason.",
+      "Never unclaim by deleting the check from the record; the record is what the next agent reads."
+    ]
+  }
+}
